@@ -13,16 +13,17 @@ import javax.servlet.annotation.*;
 public class FileDownloader extends HttpServlet {
 
     @Override
-    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String downloadingFileName = req.getParameter("file_name");
         Path path = Paths.get(FileListUtil.filesPath.toString(), downloadingFileName).toAbsolutePath();
         resp.setContentType("APPLICATION/OCTET-STREAM");
         resp.setHeader("Content-disposition", "attachment; filename=" + downloadingFileName);
-        try(PrintWriter out = resp.getWriter();
-            FileInputStream in = new FileInputStream(path.toString());  ) {
+        try(InputStream in = new FileInputStream(path.toString());
+            OutputStream out = resp.getOutputStream()) {
+            byte[] buffer = new byte[1048];
             int i;
-            while ((i=in.read()) != -1) {
-                out.write(i);
+            while ((i = in.read(buffer)) != -1) {
+                out.write(buffer, 0, i);
             }
         }
     }
